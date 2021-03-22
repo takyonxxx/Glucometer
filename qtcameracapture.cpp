@@ -13,6 +13,7 @@ QList<QVideoFrame::PixelFormat> QtCameraCapture::supportedPixelFormats(QAbstract
                 << QVideoFrame::Format_ARGB32
                 << QVideoFrame::Format_ARGB32_Premultiplied
                 << QVideoFrame::Format_RGB565
+                << QVideoFrame::Format_NV21
                 << QVideoFrame::Format_RGB555;
     } else {
         return QList<QVideoFrame::PixelFormat>();

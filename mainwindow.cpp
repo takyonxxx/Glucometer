@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
     for (const QCameraInfo &cameraInfo : availableCameras) {
         qDebug() << cameraInfo.description();
     }
+    qDebug() << QCameraInfo::defaultCamera();
 
     m_camera.reset(new QCamera(QCameraInfo::defaultCamera()));
     connect(m_camera.data(), &QCamera::stateChanged, this, &MainWindow::updateCameraState);
@@ -45,7 +46,7 @@ void MainWindow::displayCameraError()
 }
 
 void MainWindow::processImage(QVideoFrame frame)
-{    
+{        
     const QImage image(frame.bits(),
                        frame.width(),
                        frame.height(),
