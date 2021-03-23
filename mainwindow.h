@@ -23,6 +23,17 @@ public:
     void start();
     void stop();
 
+    QString pixelFormatToString( QVideoFrame::PixelFormat f )
+    {
+        qDebug() << f;
+        switch( f ) {
+        default:
+        case QVideoFrame::Format_Invalid:          return QLatin1String("Invalid");
+        case QVideoFrame::Format_ARGB32:       return QLatin1String("ARGB32");
+        case QVideoFrame::Format_NV21:       return QLatin1String("NV21");
+        }
+    }
+
 private:
     QScopedPointer<QCamera> m_camera{};
     QtCameraCapture *m_cameraCapture{};
