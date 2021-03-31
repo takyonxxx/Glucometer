@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <iostream>
+using namespace std;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -43,25 +45,57 @@ void MainWindow::updateCameraState(QCamera::State state)
 
 void MainWindow::displayCameraError()
 {
-    qDebug() << m_camera->errorString();
+    qDebug() << "Error : " <<  m_camera->errorString();
+}
+
+QImage MainWindow::convertFrameToImage(QVideoFrame vidFrame)
+{
+    vidFrame.map(QAbstractVideoBuffer::ReadOnly);
+
+    QImage img (vidFrame.bits(), vidFrame.width(), vidFrame.height(), QImage::Format_ARGB32);
+
+    vidFrame.unmap();
+
+    return img;
 }
 
 void MainWindow::processImage(QVideoFrame frame)
 {  
-    const QImage image(frame.bits(),
-                       frame.width(),
-                       frame.height(),
-                       QVideoFrame::imageFormatFromPixelFormat(frame.pixelFormat()));
+    QImage img = convertFrameToImage(frame);
 
-    //QImage outImage = image.convertToFormat(QImage::Format_RGB32);
+    float avgR = 0.0;
+    float avgG = 0.0;
+    float avgB = 0.0;
+    float avgA = 0.0;
 
-    pixmap.setPixmap( QPixmap::fromImage(image) );
+    int totalPixels = img.height() * img.width();
+
+    for ( int row = 0; row < img.height() ; row++)
+        for ( int col = 0; col < img.width() ; col++ )
+        {
+            QColor clrCurrent( img.pixel( col, row ));
+            avgR += clrCurrent.red();
+            avgG += clrCurrent.green();
+            avgB += clrCurrent.blue();
+            avgA += clrCurrent.alpha();
+        }
+
+    avgR = avgR / totalPixels;
+    avgG = avgG / totalPixels;
+    avgB = avgB / totalPixels;
+    avgA = avgA / totalPixels;
+
+    pixmap.setPixmap( QPixmap::fromImage(img) );
     ui->graphicsView->fitInView(&pixmap, Qt::KeepAspectRatio);
 
-    QString boolText = frame.isValid() ? "true" : "false";
+    //QString boolText = frame.isValid() ? "true" : "false";
 
-    QString info =  "Frame: " + QString::number(frame.startTime()) + " format: " + pixelFormatToString(frame.pixelFormat()) +
-            " valid? : " +  boolText + " size "  + QString::number(frame.width()) + " x " + QString::number(frame.height());
+    QString info =  "R: " + QString::number(int(avgR))
+            + "\nG: " + QString::number(int(avgG))
+            + "\nB: "  + QString::number(int(avgB));
+
+    /*QString info =  "Frame: " + QString::number(frame.startTime()) + "\nFormat: " + pixelFormatToString(frame.pixelFormat()) +
+            "\nSize "  + QString::number(frame.width()) + " x " + QString::number(frame.height());*/
 
     ui->label_info->setText(info);
 }

@@ -21,7 +21,8 @@ bool QtCameraCapture::present(const QVideoFrame &frame)
     if (frame.isValid()) {
         QVideoFrame cloneFrame(frame);
         cloneFrame.map(QAbstractVideoBuffer::ReadOnly);
-        emit frameAvailable(cloneFrame);
+        if (frame.width() != 0 && frame.height() !=0)
+            emit frameAvailable(cloneFrame);
         cloneFrame.unmap();
         return true;
     }

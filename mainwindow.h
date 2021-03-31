@@ -24,8 +24,7 @@ public:
     void stop();
 
     QString pixelFormatToString( QVideoFrame::PixelFormat f )
-    {
-        qDebug() << f;
+    {        
         switch( f ) {
         default:
         case QVideoFrame::Format_Invalid:          return QLatin1String("Invalid");
@@ -43,6 +42,7 @@ private slots:
     void updateCameraState(QCamera::State);
     void displayCameraError();
     void processImage(QVideoFrame);
+    QImage convertFrameToImage(QVideoFrame vidFrame);
 
 private:
     Ui::MainWindow *ui;
