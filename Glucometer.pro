@@ -1,4 +1,4 @@
-QT       += core gui
+QT += core gui
 QT += multimedia multimediawidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -27,6 +27,12 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
+ios {
+QMAKE_INFO_PLIST = ios/Info.plist
+}
+
+android {
+
 DISTFILES += \
     android/AndroidManifest.xml \
     android/build.gradle \
@@ -41,4 +47,4 @@ ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
 ANDROID_ABIS = armeabi-v7a
 
-#sudo apt-get install qtmultimedia5-dev
+}
