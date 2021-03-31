@@ -40,3 +40,5 @@ DISTFILES += \
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
 ANDROID_ABIS = armeabi-v7a
+
+#sudo apt-get install qtmultimedia5-dev

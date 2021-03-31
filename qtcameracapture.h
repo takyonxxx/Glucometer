@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QAbstractVideoSurface>
 #include <QDebug>
-extern QImage qt_imageFromVideoFrame(const QVideoFrame &f);
 
 class QtCameraCapture : public QAbstractVideoSurface
 {
@@ -17,7 +16,8 @@ public:
 
     bool present(const QVideoFrame &frame) override;
 
-    QVideoFrame convertFormat(const QVideoFrame &inputframe, QVideoFrame::PixelFormat outputFormat);   
+    QVideoFrame convertFormat(const QVideoFrame &inputframe, QVideoFrame::PixelFormat outputFormat);       
+
 
 signals:
     void frameAvailable(QVideoFrame frame);

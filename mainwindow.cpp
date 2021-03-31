@@ -50,13 +50,9 @@ void MainWindow::displayCameraError()
 
 QImage MainWindow::convertFrameToImage(QVideoFrame vidFrame)
 {
-    vidFrame.map(QAbstractVideoBuffer::ReadOnly);
-
-    QImage img (vidFrame.bits(), vidFrame.width(), vidFrame.height(), QImage::Format_ARGB32);
-
-    vidFrame.unmap();
-
-    return img;
+    //QImage::Format imageFormat = QVideoFrame::imageFormatFromPixelFormat(vidFrame.pixelFormat());
+    QImage image = vidFrame.image();
+    return image;
 }
 
 void MainWindow::processImage(QVideoFrame frame)

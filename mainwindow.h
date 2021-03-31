@@ -4,9 +4,11 @@
 #include <QMainWindow>
 #include <QCamera>
 #include <QCameraInfo>
+#include <QVideoFrame>
 #include <QGraphicsPixmapItem>
 #include "qtcameracapture.h"
 #include <QDebug>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
