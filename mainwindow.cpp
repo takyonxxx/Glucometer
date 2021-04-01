@@ -62,7 +62,7 @@ void MainWindow::processImage(QVideoFrame frame)
     float avgR = 0.0;
     float avgG = 0.0;
     float avgB = 0.0;
-    float avgA = 0.0;
+    float avgH = 0.0;
 
     int totalPixels = img.height() * img.width();
 
@@ -73,13 +73,13 @@ void MainWindow::processImage(QVideoFrame frame)
             avgR += clrCurrent.red();
             avgG += clrCurrent.green();
             avgB += clrCurrent.blue();
-            avgA += clrCurrent.alpha();
+            avgH += clrCurrent.hue();
         }
 
     avgR = avgR / totalPixels;
     avgG = avgG / totalPixels;
     avgB = avgB / totalPixels;
-    avgA = avgA / totalPixels;
+    avgH = avgH / totalPixels;
 
     pixmap.setPixmap( QPixmap::fromImage(img) );
     ui->graphicsView->fitInView(&pixmap, Qt::KeepAspectRatio);
@@ -88,7 +88,8 @@ void MainWindow::processImage(QVideoFrame frame)
 
     QString info =  "R: " + QString::number(int(avgR))
             + "\nG: " + QString::number(int(avgG))
-            + "\nB: "  + QString::number(int(avgB));
+            + "\nB: "  + QString::number(int(avgB))
+            + "\nH: "  + QString::number(int(avgH));
 
     /*QString info =  "Frame: " + QString::number(frame.startTime()) + "\nFormat: " + pixelFormatToString(frame.pixelFormat()) +
             "\nSize "  + QString::number(frame.width()) + " x " + QString::number(frame.height());*/
