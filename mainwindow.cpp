@@ -8,7 +8,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->label_info->setStyleSheet("font-size: 24pt; color:#ECF0F1; background-color: #0E6655; padding: 6px; spacing: 6px;");
+    ui->label_info->setStyleSheet("font-size: 24pt; color:#ECF0F1; background-color: #212F3C; padding: 6px; spacing: 6px;");
+    ui->graphicsView->setStyleSheet("font-size: 24pt; color:#ECF0F1; background-color: #212F3C; padding: 6px; spacing: 6px;");
     ui->label_info->setWordWrap(true);
     //QString currentTime = QDateTime::currentDateTime().toString("yyyyMMddhhmmss");
     ui->graphicsView->setScene(new QGraphicsScene(this));
