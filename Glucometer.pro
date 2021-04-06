@@ -12,6 +12,7 @@ CONFIG += c++11
 
 SOURCES += \
     RPPG.cpp \
+    capturethread.cpp \
     main.cpp \
     mainwindow.cpp \
     opencv.cpp \
@@ -19,6 +20,7 @@ SOURCES += \
 
 HEADERS += \
     RPPG.hpp \
+    capturethread.h \
     mainwindow.h \
     opencv.hpp \
     qtcameracapture.h

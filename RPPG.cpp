@@ -28,19 +28,85 @@ using namespace std;
 #define QUALITY_LEVEL 0.01
 #define MIN_DISTANCE 25
 
-bool RPPG::load(const rPPGAlgorithm rPPGAlg, const faceDetAlgorithm faceDetAlg,
-                const int width, const int height, const double timeBase, const int downsample,
-                const double samplingFrequency, const double rescanFrequency,
-                const int minSignalSize, const int maxSignalSize,
-                const string &logPath, const string &haarPath,
-                const string &dnnProtoPath, const string &dnnModelPath,
-                const bool log, const bool gui) {
+bool RPPG::load(const string &haarPath, const string &dnnProtoPath, const string &dnnModelPath) {
+
+    // algorithm setting
+    rPPGAlgorithm rPPGAlg;
+    rPPGAlg = to_rppgAlgorithm(DEFAULT_RPPG_ALGORITHM);
+    cout << "Using rPPG algorithm " << rPPGAlg << "." << endl;
+
+    // face detection algorithm setting
+    faceDetAlgorithm faceDetAlg;
+    faceDetAlg = to_faceDetAlgorithm(DEFAULT_FACEDET_ALGORITHM);
+    cout << "Using face detection algorithm " << faceDetAlg << "." << endl;
+
+    // rescanFrequency setting
+    double rescanFrequency;
+    rescanFrequency = DEFAULT_RESCAN_FREQUENCY;
+
+    // samplingFrequency setting
+    double samplingFrequency;
+    samplingFrequency = DEFAULT_SAMPLING_FREQUENCY;
+
+    // max signal size setting
+    int maxSignalSize;
+    maxSignalSize = DEFAULT_MAX_SIGNAL_SIZE;
+
+    // min signal size setting
+    int minSignalSize;
+    minSignalSize = DEFAULT_MIN_SIGNAL_SIZE;
+
+    // Reading downsample setting
+    int downsample;
+    downsample = DEFAULT_DOWNSAMPLE;
+
+    std::ifstream test1(HAAR_CLASSIFIER_PATH);
+    if (!test1) {
+        std::cout << "Face classifier xml not found!" << std::endl;
+        return false;
+    }
+
+    std::ifstream test2(DNN_PROTO_PATH);
+    if (!test2) {
+        std::cout << "DNN proto file not found!" << std::endl;
+        return false;
+    }
+
+    std::ifstream test3(DNN_MODEL_PATH);
+    if (!test3) {
+        std::cout << "DNN model file not found!" << std::endl;
+        return false;
+    }
+
+    bool offlineMode = false;
+
+    VideoCapture cap;
+    cap.open(0);
+    if (!cap.isOpened()) {
+        return false;
+    }
+
+    std::string title = offlineMode ? "rPPG offline" : "rPPG online";
+
+    // Configure logfile path
+    string logPath;
+    std::ostringstream filepath;
+    filepath << "Live_ffmpeg";
+    logPath = filepath.str();
+
+    // Load video information
+    const int width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
+    const int height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+    const double FPS = cap.get(cv::CAP_PROP_FPS);
+    const double timeBase = 0.001;
+
+    cap.release();
 
     this->rPPGAlg = rPPGAlg;
     this->faceDetAlg = faceDetAlg;
-    this->guiMode = gui;
+    this->guiMode = true;
     this->lastSamplingTime = 0;
-    this->logMode = log;
+    this->logMode = false;
     this->minFaceSize = Size(min(width, height) * REL_MIN_FACE_SIZE, min(width, height) * REL_MIN_FACE_SIZE);
     this->maxSignalSize = maxSignalSize;
     this->minSignalSize = minSignalSize;
@@ -93,14 +159,14 @@ void RPPG::processFrame(Mat &frameRGB, Mat &frameGray, int time) {
 
     if (!faceValid) {
 
-        cout << "Not valid, finding a new face" << endl;
+        //cout << "Not valid, finding a new face" << endl;
 
         lastScanTime = time;
         detectFace(frameRGB, frameGray);
 
     } else if ((time - lastScanTime) * timeBase >= 1/rescanFrequency) {
 
-        cout << "Valid, but rescanning face" << endl;
+        //cout << "Valid, but rescanning face" << endl;
 
         lastScanTime = time;
         detectFace(frameRGB, frameGray);
@@ -108,7 +174,7 @@ void RPPG::processFrame(Mat &frameRGB, Mat &frameGray, int time) {
 
     } else {
 
-        cout << "Tracking face" << endl;
+        //cout << "Tracking face" << endl;
 
         trackFace(frameGray);
     }
@@ -179,7 +245,7 @@ void RPPG::processFrame(Mat &frameRGB, Mat &frameGray, int time) {
 
 void RPPG::detectFace(Mat &frameRGB, Mat &frameGray) {
 
-    cout << "Scanning for faces…" << endl;
+    //cout << "Scanning for faces…" << endl;
     vector<Rect> boxes = {};
 
     switch (faceDetAlg) {
@@ -215,7 +281,7 @@ void RPPG::detectFace(Mat &frameRGB, Mat &frameGray) {
 
     if (boxes.size() > 0) {
 
-        cout << "Found a face" << endl;
+        //cout << "Found a face" << endl;
 
         setNearestBox(boxes);
         detectCorners(frameGray);
@@ -225,7 +291,7 @@ void RPPG::detectFace(Mat &frameRGB, Mat &frameGray) {
 
     } else {
 
-        cout << "Found no face" << endl;
+        //cout << "Found no face" << endl;
         invalidateFace();
     }
 }
@@ -302,7 +368,7 @@ void RPPG::trackFace(Mat &frameGray) {
             corners_0v.push_back(corners_0[j]);
             corners_1v.push_back(corners_1[j]);
         } else {
-            cout << "Mis!" << std::endl;
+            //cout << "Mis!" << std::endl;
         }
     }
 
@@ -337,7 +403,7 @@ void RPPG::trackFace(Mat &frameGray) {
         }
 
     } else {
-        cout << "Tracking failed! Not enough corners left." << endl;
+        //cout << "Tracking failed! Not enough corners left." << endl;
         invalidateFace();
     }
 }
@@ -349,7 +415,7 @@ void RPPG::updateROI() {
 
 void RPPG::updateMask(Mat &frameGray) {
 
-    cout << "Update mask" << endl;
+    //cout << "Update mask" << endl;
 
     mask = Mat::zeros(frameGray.size(), frameGray.type());
     rectangle(mask, this->roi, WHITE, FILLED);
@@ -543,7 +609,7 @@ void RPPG::estimateHeartrate() {
         bpm = pmax.y * fps / total * SEC_PER_MIN;
         bpms.push_back(bpm);
 
-        cout << "FPS=" << fps << " Vals=" << powerSpectrum.rows << " Peak=" << pmax.y << " BPM=" << bpm << endl;
+        //cout << "FPS=" << fps << " Vals=" << powerSpectrum.rows << " Peak=" << pmax.y << " BPM=" << bpm << endl;
 
         // Logging
         if (logMode) {
@@ -572,7 +638,7 @@ void RPPG::estimateHeartrate() {
         minBpm = bpms.at<double>(0, 0);
         maxBpm = bpms.at<double>(bpms.rows-1, 0);
 
-        std::cout << "meanBPM=" << meanBpm << " minBpm=" << minBpm << " maxBpm=" << maxBpm << std::endl;
+        //std::cout << "meanBPM=" << meanBpm << " minBpm=" << minBpm << " maxBpm=" << maxBpm << std::endl;
 
         bpms.pop_back(bpms.rows);
     }
@@ -649,13 +715,13 @@ void RPPG::draw(cv::Mat &frameRGB) {
     if (faceValid) {
         ss.precision(3);
         ss << meanBpm << " bpm";
-        putText(frameRGB, ss.str(), Point(box.tl().x, box.tl().y - 10), FONT_HERSHEY_PLAIN, 2, RED, 2);
+        putText(frameRGB, ss.str(), Point(box.tl().x, box.tl().y - 20), FONT_HERSHEY_PLAIN, 4, BLUE, 4);
     }
 
     // Draw FPS text
     ss.str("");
     ss << fps << " fps";
-    putText(frameRGB, ss.str(), Point(box.tl().x, box.br().y + 40), FONT_HERSHEY_PLAIN, 2, GREEN, 2);
+    putText(frameRGB, ss.str(), Point(box.tl().x, box.br().y + 60), FONT_HERSHEY_PLAIN, 4, GREEN, 4);
 
     // Draw corners
     for (int i = 0; i < corners.size(); i++) {

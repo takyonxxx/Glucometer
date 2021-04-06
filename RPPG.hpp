@@ -1,11 +1,3 @@
-//
-//  RPPG.hpp
-//  Heartbeat
-//
-//  Created by Philipp Rouast on 7/07/2016.
-//  Copyright © 2016 Philipp Roüast. All rights reserved.
-//
-
 #ifndef RPPG_hpp
 #define RPPG_hpp
 
@@ -15,6 +7,23 @@
 #include <opencv2/dnn.hpp>
 
 #include <stdio.h>
+#include <iostream>
+#include <vector>
+#include <map>
+#include <string>
+#include <algorithm>
+
+#define DEFAULT_RPPG_ALGORITHM "g"
+#define DEFAULT_FACEDET_ALGORITHM "haar"
+#define DEFAULT_RESCAN_FREQUENCY 1
+#define DEFAULT_SAMPLING_FREQUENCY 1
+#define DEFAULT_MIN_SIGNAL_SIZE 5
+#define DEFAULT_MAX_SIGNAL_SIZE 5
+#define DEFAULT_DOWNSAMPLE 1 // x means only every xth frame is used
+
+#define HAAR_CLASSIFIER_PATH "haarcascade_frontalface_alt.xml"
+#define DNN_PROTO_PATH "opencv/deploy.prototxt"
+#define DNN_MODEL_PATH "opencv/res10_300x300_ssd_iter_140000.caffemodel"
 
 using namespace cv;
 using namespace dnn;
@@ -31,13 +40,7 @@ public:
     RPPG() {;}
 
     // Load Settings
-    bool load(const rPPGAlgorithm rPPGAlg, const faceDetAlgorithm faceDetAlg,
-              const int width, const int height, const double timeBase, const int downsample,
-              const double samplingFrequency, const double rescanFrequency,
-              const int minSignalSize, const int maxSignalSize,
-              const string &logPath, const string &haarPath,
-              const string &dnnProtoPath, const string &dnnModelPath,
-              const bool log, const bool gui);
+    bool load(const string &haarPath, const string &dnnProtoPath, const string &dnnModelPath);
 
     void processFrame(Mat &frameRGB, Mat &frameGray, int time);
 
@@ -60,6 +63,35 @@ private:
     void draw(Mat &frameRGB);
     void invalidateFace();
     void log();
+
+    static bool to_bool(string s) {
+        bool result;
+        transform(s.begin(), s.end(), s.begin(), ::tolower);
+        istringstream is(s);
+        is >> boolalpha >> result;
+        return result;
+    }
+
+    static rPPGAlgorithm to_rppgAlgorithm(string s) {
+        rPPGAlgorithm result;
+        if (s == "g") result = g;
+        else if (s == "pca") result = pca;
+        else if (s == "xminay") result = xminay;
+        else {
+            std::cout << "Please specify valid rPPG algorithm (g, pca, xminay)!" << std::endl;
+        }
+        return result;
+    }
+
+    static faceDetAlgorithm to_faceDetAlgorithm(string s) {
+        faceDetAlgorithm result;
+        if (s == "haar") result = haar;
+        else if (s == "deep") result = deep;
+        else {
+            std::cout << "Please specify valid face detection algorithm (haar, deep)!" << std::endl;
+        }
+        return result;
+    }
 
     // The algorithm
     rPPGAlgorithm rPPGAlg;
