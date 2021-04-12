@@ -9,6 +9,7 @@
 #include <QGraphicsPixmapItem>
 #include "qtcameracapture.h"
 #include "capturethread.h"
+#include <QFile>
 #include <QDebug>
 
 
@@ -26,6 +27,34 @@ public:
 
     void start();
     void stop();
+
+    void createFile(QString &fileName)
+    {
+        QString data;
+
+        QFile file(fileName);
+        if(!file.open(QIODevice::ReadOnly)) {
+            fprintf(stderr, "%s file not opened\n", fileName.toStdString().c_str());
+            exit(0);
+        }
+        else
+        {
+            data = file.readAll();
+        }
+
+        file.close();
+
+        QString filename = fileName.remove(":/opencv/");
+        QFile temp(filename);
+
+        if(temp.exists())
+            return;
+
+        if (temp.open(QIODevice::ReadWrite)) {
+            QTextStream stream(&temp);
+            stream << data << endl;
+        }
+    }
 
 
     QString pixelFormatToString( QVideoFrame::PixelFormat f )
@@ -51,7 +80,7 @@ private:
     QDateTime h_start{};
     QDateTime h_end{};
     QString info{};
-
+    int count{0};
 
 private slots:
     void updateCameraState(QCamera::State);

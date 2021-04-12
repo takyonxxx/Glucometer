@@ -22,8 +22,8 @@
 #define DEFAULT_DOWNSAMPLE 1 // x means only every xth frame is used
 
 #define HAAR_CLASSIFIER_PATH "haarcascade_frontalface_alt.xml"
-#define DNN_PROTO_PATH "opencv/deploy.prototxt"
-#define DNN_MODEL_PATH "opencv/res10_300x300_ssd_iter_140000.caffemodel"
+#define DNN_PROTO_PATH "deploy.prototxt"
+#define DNN_MODEL_PATH "res10_300x300_ssd_iter_140000.caffemodel"
 
 using namespace cv;
 using namespace dnn;

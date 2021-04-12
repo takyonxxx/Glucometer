@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "RPPG.hpp"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -14,12 +15,30 @@ MainWindow::MainWindow(QWidget *parent)
     setGeometry(0,0,1024,600);
     ui->graphicsView->scene()->addItem(&pixmap);
 
-    cpThread = new CaptureThread{this};
-    QObject::connect(cpThread, &CaptureThread::frameCaptured, this, &MainWindow::processFrame);
-    connect(cpThread, &CaptureThread::finished, cpThread, &QObject::deleteLater);
-    connect(cpThread, &CaptureThread::finished, [&](){ cpThread = nullptr; });
+    QString fileName = ":/opencv/deploy.prototxt";
+    createFile(fileName);
+    fileName = ":/opencv/haarcascade_frontalface_alt.xml";
+    createFile(fileName);
+    fileName = ":/opencv/res10_300x300_ssd_iter_140000.caffemodel";
+    createFile(fileName);
 
-    cpThread->start();
+    VideoCapture cap;
+    if (cap.open(0))
+    {
+        cap.release();
+
+        cpThread = new CaptureThread{this};
+        QObject::connect(cpThread, &CaptureThread::frameCaptured, this, &MainWindow::processFrame);
+        connect(cpThread, &CaptureThread::finished, cpThread, &QObject::deleteLater);
+        connect(cpThread, &CaptureThread::finished, [&](){ cpThread = nullptr; });
+        cpThread->start();
+
+    }
+    else
+    {
+        cap.release();
+        initQCamera();
+    }
 }
 
 MainWindow::~MainWindow()
@@ -69,9 +88,43 @@ QImage MainWindow::convertFrameToImage(QVideoFrame vidFrame)
 
 void MainWindow::processImage(QVideoFrame frame)
 {  
-    QImage img = convertFrameToImage(frame);
+    RPPG rppg = RPPG();
+    rppg.load(HAAR_CLASSIFIER_PATH, DNN_PROTO_PATH, DNN_MODEL_PATH);
+    Mat frameRGB, frameGray;
+    double bpm = 0.0;
 
-    float avgR = 0.0;
+
+    if(!frameRGB.empty())
+    {
+        // Generate grayframe
+        cvtColor(frameRGB, frameGray, COLOR_BGR2GRAY);
+        equalizeHist(frameGray, frameGray);
+
+        int time;
+        time = (cv::getTickCount()*1000.0)/cv::getTickFrequency();
+
+        if (count % DEFAULT_DOWNSAMPLE == 0) {
+            rppg.processFrame(frameRGB, frameGray, time);
+        } else {
+            cout << "SKIPPING FRAME TO DOWNSAMPLE!" << endl;
+        }
+
+        QImage qimgOriginal((uchar*)frameRGB.data, frameRGB.cols, frameRGB.rows, frameRGB.step, QImage::Format_RGB888);
+        pixmap.setPixmap( QPixmap::fromImage(qimgOriginal.rgbSwapped()));
+        ui->graphicsView->fitInView(&pixmap, Qt::KeepAspectRatio);
+        QString info =  QString::number(int(bpm)) + " bpm";
+        ui->label_info->setText(info);
+
+        count++;
+    }
+    else
+    {
+        QImage img = convertFrameToImage(frame);
+        pixmap.setPixmap( QPixmap::fromImage(img) );
+        ui->graphicsView->fitInView(&pixmap, Qt::KeepAspectRatio);
+    }
+
+    /*float avgR = 0.0;
     float avgG = 0.0;
     float avgB = 0.0;
     float avgH = 0.0;
@@ -96,8 +149,6 @@ void MainWindow::processImage(QVideoFrame frame)
     h_end = QDateTime::currentDateTime();
     h_start = h_end;
 
-    pixmap.setPixmap( QPixmap::fromImage(img) );
-    ui->graphicsView->fitInView(&pixmap, Qt::KeepAspectRatio);
 
     QString info =  "R: " + QString::number(int(avgR))
             + "\nG: " + QString::number(int(avgG))
@@ -105,7 +156,7 @@ void MainWindow::processImage(QVideoFrame frame)
             + "\nH: "  + QString::number(int(avgH));
 
 
-    ui->label_info->setText(info);
+    ui->label_info->setText(info);*/
 }
 
 void MainWindow::start()

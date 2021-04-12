@@ -33,7 +33,7 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-unix:!macx{
+unix:!android{
     message("linux enabled")
 
     INCLUDEPATH += /usr/lib
@@ -46,10 +46,50 @@ unix:!macx{
 
 win32{
     message("Win32 enabled")
+    LIBS += -L$$(OPENCV_DIR)/lib -lopencv_world452
+    INCLUDEPATH += C:/opencv/build/include
 }
 
 ios {
 QMAKE_INFO_PLIST = ios/Info.plist
+}
+
+android {
+
+    LIBS += \
+       -L$$PWD/OpenCV-android-sdk/sdk/native/3rdparty/libs/armeabi-v7a \
+       -ltbb\
+       -lcpufeatures\
+       -llibprotobuf\
+       -llibjpeg-turbo\
+       -llibwebp\
+       -llibpng\
+       -llibtiff\
+       -lIlmImf\
+       -ltegra_hal
+
+    LIBS += -L$$PWD/OpenCV-android-sdk/sdk/native/libs/armeabi-v7a -lopencv_java4
+
+    LIBS += \
+        -L$$PWD/OpenCV-android-sdk/sdk/native/staticlibs/armeabi-v7a \
+        -lopencv_dnn\
+        -lopencv_ml\
+        -lopencv_objdetect\
+        -lopencv_photo\
+        -lopencv_stitching\
+        -lopencv_video\
+        -lopencv_calib3d\
+        -lopencv_features2d\
+        -lopencv_highgui\
+        -lopencv_flann\
+        -lopencv_videoio\
+        -lopencv_imgcodecs\
+        -lopencv_imgproc\
+        -lopencv_core
+
+    INCLUDEPATH += $$PWD/OpenCV-android-sdk/sdk/native/jni/include
+    DEPENDPATH += $$PWD/OpenCV-android-sdk/sdk/native/jni/include
+    ANDROID_EXTRA_LIBS = $$PWD/OpenCV-android-sdk/sdk/native/libs/armeabi-v7a/libopencv_java4.so
 }
 
 android {
@@ -71,3 +111,6 @@ ANDROID_ABIS = armeabi-v7a
 }
 
 #sudo apt install libopencv-dev python3-opencv
+
+RESOURCES += \
+    resources.qrc
