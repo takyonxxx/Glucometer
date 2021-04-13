@@ -12,6 +12,9 @@
 #include <map>
 #include <string>
 #include <algorithm>
+#include <QDebug>
+#include <QCamera>
+#include <QCameraInfo>
 
 #define DEFAULT_RPPG_ALGORITHM "g"
 #define DEFAULT_FACEDET_ALGORITHM "haar"
@@ -32,23 +35,20 @@ using namespace std;
 enum rPPGAlgorithm { g, pca, xminay };
 enum faceDetAlgorithm { haar, deep };
 
-class RPPG {
+class RPPG : public QObject
+{
+    Q_OBJECT
 
 public:
-
-    // Constructor
-    RPPG() {;}
-
+    explicit RPPG(QObject *parent);
     // Load Settings
-    bool load(const string &haarPath, const string &dnnProtoPath, const string &dnnModelPath);
-
-    void processFrame(Mat &frameRGB, Mat &frameGray, int time);
-
+    bool load(int camIndex, const string &haarPath, const string &dnnProtoPath, const string &dnnModelPath);
+    double processFrame(Mat &frameRGB, Mat &frameGray, int time);
     void exit();
 
-    typedef vector<Point2f> Contour2f;
-
 private:
+
+    typedef vector<Point2f> Contour2f;
 
     void detectFace(Mat &frameRGB, Mat &frameGray);
     void setNearestBox(vector<Rect> boxes);
@@ -149,6 +149,11 @@ private:
     ofstream logfile;
     ofstream logfileDetailed;
     string logfilepath;
+
+    QString info{};
+
+signals:
+    void sendInfo(QString);
 };
 
 

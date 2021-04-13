@@ -2,16 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QCamera>
-#include <QCameraInfo>
-#include <QDateTime>
-#include <QVideoFrame>
-#include <QGraphicsPixmapItem>
-#include "qtcameracapture.h"
 #include "capturethread.h"
 #include <QFile>
-#include <QDebug>
-
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -24,9 +16,6 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
-    void start();
-    void stop();
 
     void createFile(QString &fileName)
     {
@@ -52,43 +41,18 @@ public:
 
         if (temp.open(QIODevice::ReadWrite)) {
             QTextStream stream(&temp);
-            stream << data << endl;
-        }
-    }
-
-
-    QString pixelFormatToString( QVideoFrame::PixelFormat f )
-    {
-        switch( f ) {
-        default:
-        case QVideoFrame::Format_Invalid:          return QLatin1String("Invalid");
-        case QVideoFrame::Format_ARGB32:       return QLatin1String("ARGB32");
-        case QVideoFrame::Format_NV21:       return QLatin1String("NV21");
+            stream << data << Qt::endl;
         }
     }
 
 private:
 
-    void initHeartbeat();
-    void initQCamera();
-
     CaptureThread* cpThread{};
-
-    QScopedPointer<QCamera> m_camera{};
-    QtCameraCapture *m_cameraCapture{};
     QGraphicsPixmapItem pixmap;
-    QDateTime h_start{};
-    QDateTime h_end{};
-    QString info{};
-    int count{0};
 
-private slots:
-    void updateCameraState(QCamera::State);
-    void displayCameraError();
-    void processImage(QVideoFrame);
-    void processFrame(Mat&, double);
-    QImage convertFrameToImage(QVideoFrame vidFrame);
-
+private slots:    
+    void processFrame(Mat&, bool);
+    void printInfo(QString);
 private:
     Ui::MainWindow *ui;
 };

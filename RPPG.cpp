@@ -28,17 +28,20 @@ using namespace std;
 #define QUALITY_LEVEL 0.01
 #define MIN_DISTANCE 25
 
-bool RPPG::load(const string &haarPath, const string &dnnProtoPath, const string &dnnModelPath) {
+RPPG::RPPG(QObject* parent)
+    :QObject(parent)
+{
+}
+
+bool RPPG::load(int camIndex, const string &haarPath, const string &dnnProtoPath, const string &dnnModelPath) {
 
     // algorithm setting
     rPPGAlgorithm rPPGAlg;
     rPPGAlg = to_rppgAlgorithm(DEFAULT_RPPG_ALGORITHM);
-    cout << "Using rPPG algorithm " << rPPGAlg << "." << endl;
 
     // face detection algorithm setting
     faceDetAlgorithm faceDetAlg;
     faceDetAlg = to_faceDetAlgorithm(DEFAULT_FACEDET_ALGORITHM);
-    cout << "Using face detection algorithm " << faceDetAlg << "." << endl;
 
     // rescanFrequency setting
     double rescanFrequency;
@@ -63,27 +66,50 @@ bool RPPG::load(const string &haarPath, const string &dnnProtoPath, const string
     std::ifstream test1(HAAR_CLASSIFIER_PATH);
     if (!test1) {
         std::cout << "Face classifier xml not found!" << std::endl;
+        info = "Face classifier xml not found!";
+        emit sendInfo(info);
         return false;
     }
 
     std::ifstream test2(DNN_PROTO_PATH);
     if (!test2) {
         std::cout << "DNN proto file not found!" << std::endl;
+        info = "DNN proto file not found!";
+        emit sendInfo(info);
         return false;
     }
 
     std::ifstream test3(DNN_MODEL_PATH);
     if (!test3) {
         std::cout << "DNN model file not found!" << std::endl;
+        info = "DNN model file not found!";
+        emit sendInfo(info);
         return false;
     }
 
     bool offlineMode = false;
+    int width = 0;
+    int height = 0;
+    double timeBase = 0.0;
 
     VideoCapture cap;
-    cap.open(0);
-    if (!cap.isOpened()) {
-        return false;
+    cap.open(camIndex);
+
+    if (!cap.isOpened())
+    {
+        width = 1440;
+        height = 1080;
+        timeBase = 0.001;
+    }
+    else
+    {
+        // Load video information
+        width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
+        height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+        timeBase = 0.001;
+
+        if(cap.isOpened())
+            cap.release();
     }
 
     std::string title = offlineMode ? "rPPG offline" : "rPPG online";
@@ -93,14 +119,6 @@ bool RPPG::load(const string &haarPath, const string &dnnProtoPath, const string
     std::ostringstream filepath;
     filepath << "Live_ffmpeg";
     logPath = filepath.str();
-
-    // Load video information
-    const int width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
-    const int height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
-    const double FPS = cap.get(cv::CAP_PROP_FPS);
-    const double timeBase = 0.001;
-
-    cap.release();
 
     this->rPPGAlg = rPPGAlg;
     this->faceDetAlg = faceDetAlg;
@@ -117,10 +135,10 @@ bool RPPG::load(const string &haarPath, const string &dnnProtoPath, const string
 
     // Load classifier
     switch (faceDetAlg) {
-      case haar:
+    case haar:
         haarClassifier.load(haarPath);
         break;
-      case deep:
+    case deep:
         dnnClassifier = readNetFromCaffe(dnnProtoPath, dnnModelPath);
         break;
     }
@@ -152,35 +170,33 @@ void RPPG::exit() {
     logfileDetailed.close();
 }
 
-void RPPG::processFrame(Mat &frameRGB, Mat &frameGray, int time) {
+double RPPG::processFrame(Mat &frameRGB, Mat &frameGray, int time) {
 
     // Set time
     this->time = time;
 
-    if (!faceValid) {
-
-        //cout << "Not valid, finding a new face" << endl;
+    if (!faceValid)
+    {
+        info = "Searching face : " + QString::number(time);
+        emit sendInfo(info);
 
         lastScanTime = time;
         detectFace(frameRGB, frameGray);
 
-    } else if ((time - lastScanTime) * timeBase >= 1/rescanFrequency) {
-
-        //cout << "Valid, but rescanning face" << endl;
-
+    }
+    else if ((time - lastScanTime) * timeBase >= 1/rescanFrequency) {
         lastScanTime = time;
         detectFace(frameRGB, frameGray);
         rescanFlag = true;
 
-    } else {
-
-        //cout << "Tracking face" << endl;
-
+    }
+    else
+    {
         trackFace(frameGray);
     }
 
-    if (faceValid) {
-
+    if (faceValid)
+    {        
         // Update fps
         fps = getFps(t, timeBase);
 
@@ -215,15 +231,15 @@ void RPPG::processFrame(Mat &frameRGB, Mat &frameGray, int time) {
 
             // Filtering
             switch (rPPGAlg) {
-                case g:
-                    extractSignal_g();
-                    break;
-                case pca:
-                    extractSignal_pca();
-                    break;
-                case xminay:
-                    extractSignal_xminay();
-                    break;
+            case g:
+                extractSignal_g();
+                break;
+            case pca:
+                extractSignal_pca();
+                break;
+            case xminay:
+                extractSignal_xminay();
+                break;
             }
 
             // HR estimation
@@ -239,8 +255,8 @@ void RPPG::processFrame(Mat &frameRGB, Mat &frameGray, int time) {
     }
 
     rescanFlag = false;
-
     frameGray.copyTo(lastFrameGray);
+    return meanBpm;
 }
 
 void RPPG::detectFace(Mat &frameRGB, Mat &frameGray) {
@@ -249,11 +265,11 @@ void RPPG::detectFace(Mat &frameRGB, Mat &frameGray) {
     vector<Rect> boxes = {};
 
     switch (faceDetAlg) {
-      case haar:
+    case haar:
         // Detect faces with Haar classifier
         haarClassifier.detectMultiScale(frameGray, boxes, 1.1, 2, CASCADE_SCALE_IMAGE, minFaceSize);
         break;
-      case deep:
+    case deep:
         // Detect faces with DNN
         Mat resize300;
         cv::resize(frameRGB, resize300, Size(300, 300));
@@ -264,17 +280,17 @@ void RPPG::detectFace(Mat &frameRGB, Mat &frameGray) {
         float confidenceThreshold = 0.5;
 
         for (int i = 0; i < detectionMat.rows; i++) {
-          float confidence = detectionMat.at<float>(i, 2);
-          if (confidence > confidenceThreshold) {
-            int xLeftBottom = static_cast<int>(detectionMat.at<float>(i, 3) * frameRGB.cols);
-            int yLeftBottom = static_cast<int>(detectionMat.at<float>(i, 4) * frameRGB.rows);
-            int xRightTop = static_cast<int>(detectionMat.at<float>(i, 5) * frameRGB.cols);
-            int yRightTop = static_cast<int>(detectionMat.at<float>(i, 6) * frameRGB.rows);
-            Rect object((int)xLeftBottom, (int)yLeftBottom,
-                        (int)(xRightTop - xLeftBottom),
-                        (int)(yRightTop - yLeftBottom));
-            boxes.push_back(object);
-          }
+            float confidence = detectionMat.at<float>(i, 2);
+            if (confidence > confidenceThreshold) {
+                int xLeftBottom = static_cast<int>(detectionMat.at<float>(i, 3) * frameRGB.cols);
+                int yLeftBottom = static_cast<int>(detectionMat.at<float>(i, 4) * frameRGB.rows);
+                int xRightTop = static_cast<int>(detectionMat.at<float>(i, 5) * frameRGB.cols);
+                int yRightTop = static_cast<int>(detectionMat.at<float>(i, 6) * frameRGB.rows);
+                Rect object((int)xLeftBottom, (int)yLeftBottom,
+                            (int)(xRightTop - xLeftBottom),
+                            (int)(yRightTop - yLeftBottom));
+                boxes.push_back(object);
+            }
         }
         break;
     }
@@ -353,18 +369,21 @@ void RPPG::trackFace(Mat &frameGray) {
     vector<uchar> cornersFound_0;
     Mat err;
 
-    // Track face features with Kanade-Lucas-Tomasi (KLT) algorithm
-    calcOpticalFlowPyrLK(lastFrameGray, frameGray, corners, corners_1, cornersFound_1, err);
+    if(corners.size() > 0)
+    {
+        // Track face features with Kanade-Lucas-Tomasi (KLT) algorithm
+        calcOpticalFlowPyrLK(lastFrameGray, frameGray, corners, corners_1, cornersFound_1, err);
 
-    // Backtrack once to make it more robust
-    calcOpticalFlowPyrLK(frameGray, lastFrameGray, corners_1, corners_0, cornersFound_0, err);
+        // Backtrack once to make it more robust
+        calcOpticalFlowPyrLK(frameGray, lastFrameGray, corners_1, corners_0, cornersFound_0, err);
+    }
 
     // Exclude no-good corners
     Contour2f corners_1v;
     Contour2f corners_0v;
     for (size_t j = 0; j < corners.size(); j++) {
         if (cornersFound_1[j] && cornersFound_0[j]
-            && norm(corners[j]-corners_0[j]) < 2) {
+                && norm(corners[j]-corners_0[j]) < 2) {
             corners_0v.push_back(corners_0[j]);
             corners_1v.push_back(corners_1[j]);
         } else {
