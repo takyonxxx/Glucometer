@@ -9,7 +9,7 @@ CaptureThread::CaptureThread(QObject* parent)
     qRegisterMetaType<Mat>("Mat&");
 
     rppg = new RPPG(this);
-    connect(rppg, &RPPG::sendInfo, this, &CaptureThread::printInfo);   
+    connect(rppg, &RPPG::sendInfo, this, &CaptureThread::printInfo);
     rppg->load(0, HAAR_CLASSIFIER_PATH, DNN_PROTO_PATH, DNN_MODEL_PATH);
 
     if(!videoCapturer.open(0))
@@ -148,8 +148,10 @@ void CaptureThread::run()
                     emit sendInfo(info);
                 }
 
-                emit frameCaptured(frameRGB, true);
                 count++;
+
+                emit frameCaptured(frameRGB, true);
+
             }
         }
         else{

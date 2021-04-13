@@ -33,6 +33,8 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     cpThread->abort();
+    cpThread->quit();
+    cpThread->wait(1000);
     delete ui;
 }
 

@@ -33,7 +33,7 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-unix:!android{
+unix:!macx:!ios:!android{
     message("linux enabled")
 
     INCLUDEPATH += /usr/lib
@@ -44,6 +44,12 @@ unix:!android{
     LIBS += -lopencv_core -lopencv_dnn -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_objdetect -lopencv_video -lopencv_videoio
 }
 
+macx{
+    message("macx enabled")
+    INCLUDEPATH += /usr/local/opt/opencv/include/opencv4
+    LIBS += -L/usr/local/opt/opencv/lib -lopencv_core -lopencv_dnn -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_objdetect -lopencv_video -lopencv_videoio
+}
+
 win32{
     message("Win32 enabled")
     LIBS += -L$$(OPENCV_DIR)/lib -lopencv_world452
@@ -51,7 +57,12 @@ win32{
 }
 
 ios {
-QMAKE_INFO_PLIST = ios/Info.plist
+    message("ios enabled")
+    QMAKE_INFO_PLIST = ios/Info.plist
+    INCLUDEPATH += $$PWD/ios/opencv2.framework/Headers
+    LIBS += \
+             -F $$PWD/ios \
+             -framework opencv2
 }
 
 android {
