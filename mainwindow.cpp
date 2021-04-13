@@ -7,7 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->textInfo->setStyleSheet("font-size: 18pt; color:#ECF0F1; background-color: #212F3C; padding: 6px; spacing: 6px;");
-    ui->textInfo->setMaximumHeight(60);
+    ui->textInfo->setMaximumHeight(40);
     ui->graphicsView->setStyleSheet("font-size: 24pt; color:#ECF0F1; background-color: #212F3C; padding: 6px; spacing: 6px;");
 
     //QString currentTime = QDateTime::currentDateTime().toString("yyyyMMddhhmmss");
