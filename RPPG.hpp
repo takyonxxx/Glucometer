@@ -62,7 +62,6 @@ private:
     void estimateHeartrate();
     void draw(Mat &frameRGB);
     void invalidateFace();
-    void log();
 
     static bool to_bool(string s) {
         bool result;
@@ -142,12 +141,7 @@ private:
     double bpm = 0.0;
     double meanBpm;
     double minBpm;
-    double maxBpm;
-
-    // Logfiles
-    ofstream logfile;
-    ofstream logfileDetailed;
-    string logfilepath;
+    double maxBpm;    
 
     QString info{};
 

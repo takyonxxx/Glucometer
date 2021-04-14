@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QScreen>
 #include "capturethread.h"
 #include <QFile>
 
@@ -45,14 +46,19 @@ public:
         }
     }
 
-private:
+#ifdef Q_OS_ANDROID
 
+#endif
+
+private:
     CaptureThread* cpThread{};
     QGraphicsPixmapItem pixmap;
 
 private slots:    
-    void processFrame(Mat&, bool);
+    void processFrame(Mat&, double, bool);
     void printInfo(QString);
+    void orientationChanged(Qt::ScreenOrientation orientation);
+
 private:
     Ui::MainWindow *ui;
 };

@@ -52,6 +52,16 @@ void CaptureThread::initQCamera()
     m_camera->start();
 }
 
+void CaptureThread::setPause(bool pause)
+{
+    m_pause = pause;
+}
+
+void CaptureThread::setOrientation(const Qt::ScreenOrientation &orientation)
+{
+    m_orientation = orientation;
+}
+
 void CaptureThread::updateCameraState(QCamera::State state)
 {
     qDebug() << "Camera status: " << m_camera->status() << state;
@@ -64,6 +74,8 @@ void CaptureThread::displayCameraError()
 
 void CaptureThread::processImage(QVideoFrame frame)
 {
+    if(m_pause)
+        return;
 
     if (frame.isValid())
     {
@@ -72,12 +84,21 @@ void CaptureThread::processImage(QVideoFrame frame)
         QImage img = cloneFrame.image();
         cloneFrame.unmap();
 
-        QTransform transf;
-        //transf.scale(1, -1);
-        transf.rotate(270);
-        img = img.transformed(transf);
-        img = img.mirrored(true, false);
+        if(m_orientation == Qt::ScreenOrientation::PortraitOrientation)
+        {
+            if(img.width() > img.height())
+            {
+                QTransform transf;
+                transf.rotate(270);
+                img = img.transformed(transf);
+                img = img.mirrored(true, false);
+            }
+        }
+
         img = img.convertToFormat(QImage::Format_RGB888);
+
+        //info = QString::number(img.width()) + "x" + QString::number(img.height());
+        //emit sendInfo(info);
 
         Mat frameRGB(img.height(),
                      img.width(),
@@ -105,7 +126,7 @@ void CaptureThread::processImage(QVideoFrame frame)
             {
                 cout << "SKIPPING FRAME TO DOWNSAMPLE!" << endl;
             }
-            emit frameCaptured(frameRGB, false);
+            emit frameCaptured(frameRGB, bpm, false);
             count++;
         }
     }
@@ -136,6 +157,9 @@ void CaptureThread::run()
     {
         if(videoCapturer.isOpened())
         {
+            if(m_pause)
+                continue;
+
             videoCapturer.read(frameRGB);
 
             if(!frameRGB.empty())
@@ -156,7 +180,7 @@ void CaptureThread::run()
 
                 count++;
 
-                emit frameCaptured(frameRGB, true);
+                emit frameCaptured(frameRGB, bpm, true);
 
             }
         }

@@ -98,7 +98,14 @@
            <widget class="QGraphicsView" name="graphicsView"/>
           </item>
           <item row="1" column="0">
-           <widget class="QTextBrowser" name="textInfo"/>
+           <widget class="QLabel" name="textInfo">
+            <property name="text">
+             <string>-</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

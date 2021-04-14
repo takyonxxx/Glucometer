@@ -24,11 +24,15 @@ public:
     explicit CaptureThread(QObject *parent);
     void abort();
 
+    void setOrientation(const Qt::ScreenOrientation &orientation);
+
+    void setPause(bool pause);
+
 protected:
     void run();
 
 signals:
-    void frameCaptured(Mat&, bool);
+    void frameCaptured(Mat&, double, bool);
     void sendInfo(QString);
 
 private slots:
@@ -46,7 +50,9 @@ private:
     QtCameraCapture *m_cameraCapture{};
     QString info{};
     bool m_abort {false};
+    bool m_pause {false};
     int count{0};
+    Qt::ScreenOrientation m_orientation{Qt::ScreenOrientation::PortraitOrientation};
 
     QString convert_to_rgb(QImage &img)
     {

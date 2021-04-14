@@ -134,28 +134,12 @@ bool RPPG::load(int camIndex, const string &haarPath, const string &dnnProtoPath
     case deep:
         dnnClassifier = readNetFromCaffe(dnnProtoPath, dnnModelPath);
         break;
-    }   
-
-    // Logging bpm according to sampling frequency
-    std::ostringstream path_2;
-    path_2 << logfilepath << "_bpm.csv";
-    logfile.open(path_2.str());
-    logfile << "time;face_valid;mean;min;max\n";
-    logfile.flush();
-
-    // Logging bpm detailed
-    std::ostringstream path_3;
-    path_3 << logfilepath << "_bpmAll.csv";
-    logfileDetailed.open(path_3.str());
-    logfileDetailed << "time;face_valid;bpm\n";
-    logfileDetailed.flush();
+    }       
 
     return true;
 }
 
-void RPPG::exit() {
-    logfile.close();
-    logfileDetailed.close();
+void RPPG::exit() {   
 }
 
 double RPPG::processFrame(Mat &frameRGB, Mat &frameGray, int time) {
@@ -165,9 +149,6 @@ double RPPG::processFrame(Mat &frameRGB, Mat &frameGray, int time) {
 
     if (!faceValid)
     {
-        info = "Searching face : " + QString::number(time);
-        emit sendInfo(info);
-
         lastScanTime = time;
         detectFace(frameRGB, frameGray);
 
@@ -176,7 +157,6 @@ double RPPG::processFrame(Mat &frameRGB, Mat &frameGray, int time) {
         lastScanTime = time;
         detectFace(frameRGB, frameGray);
         rescanFlag = true;
-
     }
     else
     {
@@ -232,9 +212,6 @@ double RPPG::processFrame(Mat &frameRGB, Mat &frameGray, int time) {
 
             // HR estimation
             estimateHeartrate();
-
-            // Log
-            log();
         }
 
         if (guiMode) {
@@ -569,27 +546,10 @@ void RPPG::estimateHeartrate() {
     }
 }
 
-void RPPG::log() {
-
-    if (lastSamplingTime == time || lastSamplingTime == 0) {
-        logfile << time << ";";
-        logfile << faceValid << ";";
-        logfile << meanBpm << ";";
-        logfile << minBpm << ";";
-        logfile << maxBpm << "\n";
-        logfile.flush();
-    }
-
-    logfileDetailed << time << ";";
-    logfileDetailed << faceValid << ";";
-    logfileDetailed << bpm << "\n";
-    logfileDetailed.flush();
-}
-
 void RPPG::draw(cv::Mat &frameRGB) {
 
     // Draw roi
-    rectangle(frameRGB, roi, GREEN);
+    rectangle(frameRGB, roi, GREEN, 2);
 
     // Draw bounding box
     rectangle(frameRGB, box, BLUE, 2);
@@ -640,7 +600,11 @@ void RPPG::draw(cv::Mat &frameRGB) {
     if (faceValid) {
         ss.precision(3);
         ss << int(meanBpm);
-        putText(frameRGB, ss.str(), Point(box.tl().x + box.width/2 - 100, box.tl().y + box.height/2 + 170), FONT_HERSHEY_PLAIN, 10, RED, 8);
+#if defined (Q_OS_ANDROID)
+        putText(frameRGB, ss.str(), Point(box.tl().x + 10, box.tl().y + box.height - 10), FONT_HERSHEY_PLAIN, 12, RED, 12);
+#else
+        putText(frameRGB, ss.str(), Point(box.tl().x + 10, box.tl().y + box.height - 10), FONT_HERSHEY_PLAIN, 8, RED,8);
+#endif
     }
 
     // Draw FPS text
@@ -651,7 +615,7 @@ void RPPG::draw(cv::Mat &frameRGB) {
     // Draw corners
     for (unsigned int i = 0; i < corners.size(); i++) {
         //circle(frameRGB, corners[i], r, WHITE, -1, 8, 0);
-        line(frameRGB, Point(corners[i].x-5,corners[i].y), Point(corners[i].x+5,corners[i].y), GREEN, 1);
-        line(frameRGB, Point(corners[i].x,corners[i].y-5), Point(corners[i].x,corners[i].y+5), GREEN, 1);
+        line(frameRGB, Point(corners[i].x-5,corners[i].y), Point(corners[i].x+5,corners[i].y), GREEN, 2);
+        line(frameRGB, Point(corners[i].x,corners[i].y-5), Point(corners[i].x,corners[i].y+5), GREEN, 2);
     }
 }
