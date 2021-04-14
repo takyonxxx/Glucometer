@@ -108,7 +108,6 @@ private:
     double rescanFrequency;
     double samplingFrequency;
     double timeBase;
-    bool logMode;
     bool guiMode;
 
     // State variables

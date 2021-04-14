@@ -43,7 +43,7 @@ void CaptureThread::initQCamera()
 
     m_cameraCapture = new QtCameraCapture;
     connect(m_cameraCapture, &QtCameraCapture::frameAvailable, this, &CaptureThread::processImage);
-    m_camera->setViewfinder(m_cameraCapture);    
+    m_camera->setViewfinder(m_cameraCapture);
 
     if (m_camera->state() == QCamera::ActiveState) {
         m_camera->stop();
@@ -64,44 +64,50 @@ void CaptureThread::displayCameraError()
 
 void CaptureThread::processImage(QVideoFrame frame)
 {
-    Mat frameGray;
-    double bpm = 0.0;
 
-    QImage img = frame.image();
-
-    QPoint center = img.rect().center();
-    QTransform matrix;
-    matrix.translate(center.x(), center.y());
-    matrix.rotate(-90);
-    img = img.transformed(matrix, Qt::TransformationMode::FastTransformation);
-
-    img = img.convertToFormat(QImage::Format_RGB888);
-
-    Mat frameRGB(img.height(),
-                 img.width(),
-                 CV_8UC3,
-                 img.bits(),
-                 img.bytesPerLine());
-
-    if(!frameRGB.empty())
+    if (frame.isValid())
     {
-        // Generate grayframe
-        cvtColor(frameRGB, frameGray, COLOR_BGR2GRAY);
-        equalizeHist(frameGray, frameGray);
+        QVideoFrame cloneFrame(frame);
+        cloneFrame.map(QAbstractVideoBuffer::ReadOnly);
+        QImage img = cloneFrame.image();
+        cloneFrame.unmap();
 
-        int time;
-        time = (cv::getTickCount()*1000.0)/cv::getTickFrequency();
+        QTransform transf;
+        //transf.scale(1, -1);
+        transf.rotate(270);
+        img = img.transformed(transf);
+        img = img.mirrored(true, false);
+        img = img.convertToFormat(QImage::Format_RGB888);
 
-        if (count % DEFAULT_DOWNSAMPLE == 0)
+        Mat frameRGB(img.height(),
+                     img.width(),
+                     CV_8UC3,
+                     img.bits(),
+                     img.bytesPerLine());
+
+        if(!frameRGB.empty())
         {
-            bpm = rppg->processFrame(frameRGB, frameGray, time);
+            Mat frameGray;
+            double bpm = 0.0;
+
+            // Generate grayframe
+            cvtColor(frameRGB, frameGray, COLOR_BGR2GRAY);
+            equalizeHist(frameGray, frameGray);
+
+            int time;
+            time = (cv::getTickCount()*1000.0)/cv::getTickFrequency();
+
+            if (count % DEFAULT_DOWNSAMPLE == 0)
+            {
+                bpm = rppg->processFrame(frameRGB, frameGray, time);
+            }
+            else
+            {
+                cout << "SKIPPING FRAME TO DOWNSAMPLE!" << endl;
+            }
+            emit frameCaptured(frameRGB, false);
+            count++;
         }
-        else
-        {
-            cout << "SKIPPING FRAME TO DOWNSAMPLE!" << endl;
-        }
-        emit frameCaptured(frameRGB, false);
-        count++;
     }
 }
 
@@ -127,10 +133,10 @@ void CaptureThread::run()
     }
 
     while(!m_abort)
-    {        
+    {
         if(videoCapturer.isOpened())
         {
-            videoCapturer.read(frameRGB);            
+            videoCapturer.read(frameRGB);
 
             if(!frameRGB.empty())
             {
@@ -142,7 +148,7 @@ void CaptureThread::run()
                 time = (cv::getTickCount()*1000.0)/cv::getTickFrequency();
 
                 if (count % DEFAULT_DOWNSAMPLE == 0) {
-                    bpm = rppg->processFrame(frameRGB, frameGray, time);                    
+                    bpm = rppg->processFrame(frameRGB, frameGray, time);
                 } else {
                     info = "SKIPPING FRAME TO DOWNSAMPLE!";
                     emit sendInfo(info);

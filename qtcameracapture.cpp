@@ -10,7 +10,11 @@ QList<QVideoFrame::PixelFormat> QtCameraCapture::supportedPixelFormats(QAbstract
     if (handleType == QAbstractVideoBuffer::NoHandle) {
         return QList<QVideoFrame::PixelFormat>()
                 << QVideoFrame::Format_ARGB32
+                << QVideoFrame::Format_RGB32
+                << QVideoFrame::Format_RGB24
+                << QVideoFrame::Format_NV12
                 << QVideoFrame::Format_NV21;
+
     } else {
         return QList<QVideoFrame::PixelFormat>();
     }

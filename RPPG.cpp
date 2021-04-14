@@ -97,8 +97,8 @@ bool RPPG::load(int camIndex, const string &haarPath, const string &dnnProtoPath
 
     if (!cap.isOpened())
     {
-        width = 1440;
-        height = 1080;
+        width = 480;
+        height = 800;
         timeBase = 0.001;
     }
     else
@@ -114,17 +114,10 @@ bool RPPG::load(int camIndex, const string &haarPath, const string &dnnProtoPath
 
     std::string title = offlineMode ? "rPPG offline" : "rPPG online";
 
-    // Configure logfile path
-    string logPath;
-    std::ostringstream filepath;
-    filepath << "Live_ffmpeg";
-    logPath = filepath.str();
-
     this->rPPGAlg = rPPGAlg;
     this->faceDetAlg = faceDetAlg;
     this->guiMode = true;
     this->lastSamplingTime = 0;
-    this->logMode = false;
     this->minFaceSize = Size(min(width, height) * REL_MIN_FACE_SIZE, min(width, height) * REL_MIN_FACE_SIZE);
     this->maxSignalSize = maxSignalSize;
     this->minSignalSize = minSignalSize;
@@ -141,12 +134,7 @@ bool RPPG::load(int camIndex, const string &haarPath, const string &dnnProtoPath
     case deep:
         dnnClassifier = readNetFromCaffe(dnnProtoPath, dnnModelPath);
         break;
-    }
-
-    // Setting up logfilepath
-    ostringstream path_1;
-    path_1 << logPath << "_rppg=" << rPPGAlg << "_facedet=" << faceDetAlg << "_min=" << minSignalSize << "_max=" << maxSignalSize << "_ds=" << downsample;
-    this->logfilepath = path_1.str();
+    }   
 
     // Logging bpm according to sampling frequency
     std::ostringstream path_2;
@@ -469,22 +457,6 @@ void RPPG::extractSignal_g() {
 
     s_mav.copyTo(s_f);
 
-    // Logging
-    if (logMode) {
-        std::ofstream log;
-        std::ostringstream filepath;
-        filepath << logfilepath << "_signal_" << time << ".csv";
-        log.open(filepath.str());
-        log << "re;g;g_den;g_det;g_mav\n";
-        for (int i = 0; i < s.rows; i++) {
-            log << re.at<bool>(i, 0) << ";";
-            log << s.at<double>(i, 1) << ";";
-            log << s_den.at<double>(i, 0) << ";";
-            log << s_det.at<double>(i, 0) << ";";
-            log << s_mav.at<double>(i, 0) << "\n";
-        }
-        log.close();
-    }
 }
 
 void RPPG::extractSignal_pca() {
@@ -509,34 +481,7 @@ void RPPG::extractSignal_pca() {
     Mat s_mav = Mat(s.rows, 1, CV_32F);
     movingAverage(s_pca, s_mav, 3, fmax(floor(fps/6), 2));
 
-    s_mav.copyTo(s_f);
-
-    // Logging
-    if (logMode) {
-        std::ofstream log;
-        std::ostringstream filepath;
-        filepath << logfilepath << "_signal_" << time << ".csv";
-        log.open(filepath.str());
-        log << "re;r;g;b;r_den;g_den;b_den;r_det;g_det;b_det;pc1;pc2;pc3;s_pca;s_mav\n";
-        for (int i = 0; i < s.rows; i++) {
-            log << re.at<bool>(i, 0) << ";";
-            log << s.at<double>(i, 0) << ";";
-            log << s.at<double>(i, 1) << ";";
-            log << s.at<double>(i, 2) << ";";
-            log << s_den.at<double>(i, 0) << ";";
-            log << s_den.at<double>(i, 1) << ";";
-            log << s_den.at<double>(i, 2) << ";";
-            log << s_det.at<double>(i, 0) << ";";
-            log << s_det.at<double>(i, 1) << ";";
-            log << s_det.at<double>(i, 2) << ";";
-            log << pc.at<double>(i, 0) << ";";
-            log << pc.at<double>(i, 1) << ";";
-            log << pc.at<double>(i, 2) << ";";
-            log << s_pca.at<double>(i, 0) << ";";
-            log << s_mav.at<double>(i, 0) << "\n";
-        }
-        log.close();
-    }
+    s_mav.copyTo(s_f);    
 }
 
 void RPPG::extractSignal_xminay() {
@@ -582,29 +527,6 @@ void RPPG::extractSignal_xminay() {
     // Moving average
     movingAverage(xminay, s_f, 3, fmax(floor(fps/6), 2));
 
-    // Logging
-    if (logMode) {
-        std::ofstream log;
-        std::ostringstream filepath;
-        filepath << logfilepath << "_signal_" << time << ".csv";
-        log.open(filepath.str());
-        log << "r;g;b;r_den;g_den;b_den;x_s;y_s;x_f;y_f;s;s_f\n";
-        for (int i = 0; i < s.rows; i++) {
-            log << s.at<double>(i, 0) << ";";
-            log << s.at<double>(i, 1) << ";";
-            log << s.at<double>(i, 2) << ";";
-            log << s_den.at<double>(i, 0) << ";";
-            log << s_den.at<double>(i, 1) << ";";
-            log << s_den.at<double>(i, 2) << ";";
-            log << x_s.at<double>(i, 0) << ";";
-            log << y_s.at<double>(i, 0) << ";";
-            log << x_f.at<double>(i, 0) << ";";
-            log << y_f.at<double>(i, 0) << ";";
-            log << xminay.at<double>(i, 0) << ";";
-            log << s_f.at<double>(i, 0) << "\n";
-        }
-        log.close();
-    }
 }
 
 void RPPG::estimateHeartrate() {
@@ -629,22 +551,6 @@ void RPPG::estimateHeartrate() {
         bpms.push_back(bpm);
 
         //cout << "FPS=" << fps << " Vals=" << powerSpectrum.rows << " Peak=" << pmax.y << " BPM=" << bpm << endl;
-
-        // Logging
-        if (logMode) {
-            std::ofstream log;
-            std::ostringstream filepath;
-            filepath << logfilepath << "_estimation_" << time << ".csv";
-            log.open(filepath.str());
-            log << "i;powerSpectrum\n";
-            for (int i = 0; i < powerSpectrum.rows; i++) {
-                if (low <= i && i <= high) {
-                    log << i << ";";
-                    log << powerSpectrum.at<double>(i, 0) << "\n";
-                }
-            }
-            log.close();
-        }
     }
 
     if ((time - lastSamplingTime) * timeBase >= 1/samplingFrequency) {
@@ -686,7 +592,7 @@ void RPPG::draw(cv::Mat &frameRGB) {
     rectangle(frameRGB, roi, GREEN);
 
     // Draw bounding box
-    rectangle(frameRGB, box, RED);
+    rectangle(frameRGB, box, BLUE, 2);
 
     // Draw signal
     if (!s_f.empty() && !powerSpectrum.empty()) {
@@ -701,18 +607,18 @@ void RPPG::draw(cv::Mat &frameRGB) {
         minMaxLoc(s_f, &vmin, &vmax, &pmin, &pmax);
         double heightMult = displayHeight/(vmax - vmin);
         double widthMult = displayWidth/(s_f.rows - 1);
-        double drawAreaTlX = box.tl().x + box.width + 20;
-        double drawAreaTlY = box.tl().y;
+        double drawAreaTlX = box.tl().x + box.width*0.1;
+        double drawAreaTlY = box.tl().y - box.height/2 - 10;
         Point p1(drawAreaTlX, drawAreaTlY + (vmax - s_f.at<double>(0, 0))*heightMult);
         Point p2;
         for (int i = 1; i < s_f.rows; i++) {
             p2 = Point(drawAreaTlX + i * widthMult, drawAreaTlY + (vmax - s_f.at<double>(i, 0))*heightMult);
-            line(frameRGB, p1, p2, RED, 2);
+            line(frameRGB, p1, p2, BLUE, 3);
             p1 = p2;
         }
 
         // Draw powerSpectrum
-        const int total = s_f.rows;
+        /*const int total = s_f.rows;
         Mat bandMask = Mat::zeros(s_f.size(), CV_8U);
         bandMask.rowRange(min(low, total), min(high, total) + 1).setTo(ONE);
         minMaxLoc(powerSpectrum, &vmin, &vmax, &pmin, &pmax, bandMask);
@@ -725,7 +631,7 @@ void RPPG::draw(cv::Mat &frameRGB) {
             p2 = Point(drawAreaTlX + (i - low) * widthMult, drawAreaTlY + (vmax - powerSpectrum.at<double>(i, 0)) * heightMult);
             line(frameRGB, p1, p2, RED, 2);
             p1 = p2;
-        }
+        }*/
     }
 
     std::stringstream ss;
@@ -733,17 +639,17 @@ void RPPG::draw(cv::Mat &frameRGB) {
     // Draw BPM text
     if (faceValid) {
         ss.precision(3);
-        ss << meanBpm << " bpm";
-        putText(frameRGB, ss.str(), Point(box.tl().x, box.tl().y - 20), FONT_HERSHEY_PLAIN, 4, BLUE, 4);
+        ss << int(meanBpm);
+        putText(frameRGB, ss.str(), Point(box.tl().x + box.width/2 - 100, box.tl().y + box.height/2 + 170), FONT_HERSHEY_PLAIN, 10, RED, 8);
     }
 
     // Draw FPS text
-    ss.str("");
+    /*ss.str("");
     ss << fps << " fps";
-    putText(frameRGB, ss.str(), Point(box.tl().x, box.br().y + 60), FONT_HERSHEY_PLAIN, 4, GREEN, 4);
+    putText(frameRGB, ss.str(), Point(box.tl().x, box.br().y + 60), FONT_HERSHEY_PLAIN, 4, GREEN, 4);*/
 
     // Draw corners
-    for (int i = 0; i < corners.size(); i++) {
+    for (unsigned int i = 0; i < corners.size(); i++) {
         //circle(frameRGB, corners[i], r, WHITE, -1, 8, 0);
         line(frameRGB, Point(corners[i].x-5,corners[i].y), Point(corners[i].x+5,corners[i].y), GREEN, 1);
         line(frameRGB, Point(corners[i].x,corners[i].y-5), Point(corners[i].x,corners[i].y+5), GREEN, 1);
