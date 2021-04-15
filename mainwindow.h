@@ -3,8 +3,8 @@
 
 #include <QMainWindow>
 #include <QScreen>
-#include "capturethread.h"
 #include <QFile>
+#include "capturethread.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

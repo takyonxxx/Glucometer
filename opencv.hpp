@@ -1,18 +1,9 @@
-//
-//  opencv.hpp
-//  Heartbeat
-//
-//  Created by Philipp Rouast on 3/03/2016.
-//  Copyright © 2016 Philipp Roüast. All rights reserved.
-//
-
 #ifndef opencv_hpp
 #define opencv_hpp
 
 #include <stdio.h>
-
 #include <iostream>
-#include <opencv2/core.hpp>
+#include <opencv2/opencv.hpp>
 
 namespace cv {
 
@@ -74,6 +65,38 @@ namespace cv {
         }
         std::cout << std::endl;
     }
+
+    /*QString convert_to_rgb(QImage &img)
+    {
+        float avgR = 0.0;
+        float avgG = 0.0;
+        float avgB = 0.0;
+        float avgH = 0.0;
+
+        int totalPixels = img.height() * img.width();
+
+        for ( int row = 0; row < img.height() ; row++)
+            for ( int col = 0; col < img.width() ; col++ )
+            {
+                QColor clrCurrent( img.pixel( col, row ));
+                avgR += clrCurrent.red();
+                avgG += clrCurrent.green();
+                avgB += clrCurrent.blue();
+                avgH += clrCurrent.hue();
+            }
+
+        avgR = avgR / totalPixels;
+        avgG = avgG / totalPixels;
+        avgB = avgB / totalPixels;
+        avgH = avgH / totalPixels;
+
+        QString rgb =  "R: " + QString::number(int(avgR))
+                + "\nG: " + QString::number(int(avgG))
+                + "\nB: "  + QString::number(int(avgB))
+                + "\nH: "  + QString::number(int(avgH));
+
+        return rgb;
+    }*/
 
 }
 

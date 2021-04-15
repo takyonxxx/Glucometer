@@ -3,9 +3,6 @@
 
 #include <fstream>
 #include <string>
-#include <opencv2/objdetect.hpp>
-#include <opencv2/dnn.hpp>
-
 #include <stdio.h>
 #include <iostream>
 #include <vector>
@@ -15,6 +12,7 @@
 #include <QDebug>
 #include <QCamera>
 #include <QCameraInfo>
+#include <opencv2/opencv.hpp>
 
 #define DEFAULT_RPPG_ALGORITHM "g"
 #define DEFAULT_FACEDET_ALGORITHM "haar"

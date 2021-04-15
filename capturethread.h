@@ -3,12 +3,9 @@
 #include <QThread>
 #include <QCamera>
 #include <QCameraInfo>
-#include <QDateTime>
-#include <QVideoFrame>
 #include <QGraphicsPixmapItem>
 #include "RPPG.hpp"
 #include "qtcameracapture.h"
-#include <opencv2/opencv.hpp>
 
 using namespace std;
 using namespace cv;
@@ -53,38 +50,6 @@ private:
     bool m_pause {false};
     int count{0};
     Qt::ScreenOrientation m_orientation{Qt::ScreenOrientation::PortraitOrientation};
-
-    QString convert_to_rgb(QImage &img)
-    {
-        float avgR = 0.0;
-        float avgG = 0.0;
-        float avgB = 0.0;
-        float avgH = 0.0;
-
-        int totalPixels = img.height() * img.width();
-
-        for ( int row = 0; row < img.height() ; row++)
-            for ( int col = 0; col < img.width() ; col++ )
-            {
-                QColor clrCurrent( img.pixel( col, row ));
-                avgR += clrCurrent.red();
-                avgG += clrCurrent.green();
-                avgB += clrCurrent.blue();
-                avgH += clrCurrent.hue();
-            }
-
-        avgR = avgR / totalPixels;
-        avgG = avgG / totalPixels;
-        avgB = avgB / totalPixels;
-        avgH = avgH / totalPixels;
-
-        QString rgb =  "R: " + QString::number(int(avgR))
-                + "\nG: " + QString::number(int(avgG))
-                + "\nB: "  + QString::number(int(avgB))
-                + "\nH: "  + QString::number(int(avgH));
-
-        return rgb;
-    }
 };
 
 

@@ -1,18 +1,4 @@
-//
-//  RPPG.cpp
-//  Heartbeat
-//
-//  Created by Philipp Rouast on 7/07/2016.
-//  Copyright © 2016 Philipp Roüast. All rights reserved.
-//
-
 #include "RPPG.hpp"
-
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/core.hpp>
-#include <opencv2/video.hpp>
-
 #include "opencv.hpp"
 
 using namespace cv;

@@ -1,8 +1,5 @@
 #include "capturethread.h"
 
-#include "RPPG.hpp"
-#include <QDebug>
-
 CaptureThread::CaptureThread(QObject* parent)
     :QThread(parent)
 {
