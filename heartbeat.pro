@@ -66,6 +66,8 @@ ios {
 
 android {
 
+    ITERATION=1
+
     LIBS += \
        -L$$PWD/OpenCV-android-sdk/sdk/native/3rdparty/libs/armeabi-v7a \
        -ltbb\
@@ -101,21 +103,46 @@ android {
     DEPENDPATH += $$PWD/OpenCV-android-sdk/sdk/native/jni/include
     ANDROID_EXTRA_LIBS = $$PWD/OpenCV-android-sdk/sdk/native/libs/armeabi-v7a/libopencv_java4.so   
 
+
+    #sudo apt install libopencv-dev python3-opencv
+
+    RESOURCES += \
+        resources.qrc
+
+    DISTFILES += \
+        android/AndroidManifest.xml \
+        android/build.gradle \
+        android/gradle.properties \
+        android/gradle/wrapper/gradle-wrapper.jar \
+        android/gradle/wrapper/gradle-wrapper.properties \
+        android/gradlew \
+        android/gradlew.bat \
+        android/res/values/libs.xml
+
+    ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
 }
 
-#sudo apt install libopencv-dev python3-opencv
+contains(ANDROID_TARGET_ARCH, x86) {
 
-RESOURCES += \
-    resources.qrc
+    ANDROID_VERSION_CODE = $$ITERATION
+}
 
-DISTFILES += \
-    android/AndroidManifest.xml \
-    android/build.gradle \
-    android/gradle.properties \
-    android/gradle/wrapper/gradle-wrapper.jar \
-    android/gradle/wrapper/gradle-wrapper.properties \
-    android/gradlew \
-    android/gradlew.bat \
-    android/res/values/libs.xml
+contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
+    win32 {
+        ITERATION = $$system("set /a $$ITERATION + 1")
+    } else:unix {
+        ITERATION = $$system("echo $(($$ITERATION + 1))")
+    }
 
-ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+    ANDROID_VERSION_CODE = $$ITERATION
+}
+
+contains(ANDROID_TARGET_ARCH, arm64-v8a) {
+    win32 {
+        ITERATION = $$system("set /a $$ITERATION + 2")
+    } else:unix {
+        ITERATION = $$system("echo $(($$ITERATION + 2))")
+    }
+    ANDROID_VERSION_CODE = $$ITERATION
+}
