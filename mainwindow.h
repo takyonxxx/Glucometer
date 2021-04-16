@@ -24,8 +24,7 @@ public:
 
         QFile file(fileName);
         if(!file.open(QIODevice::ReadOnly)) {
-            fprintf(stderr, "%s file not opened\n", fileName.toStdString().c_str());
-            exit(0);
+           return;
         }
         else
         {
@@ -42,7 +41,7 @@ public:
 
         if (temp.open(QIODevice::ReadWrite)) {
             QTextStream stream(&temp);
-            stream << data << Qt::endl;
+            stream << data << endl;
         }
     }
 

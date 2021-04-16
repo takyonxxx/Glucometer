@@ -38,7 +38,7 @@ class RPPG : public QObject
     Q_OBJECT
 
 public:
-    explicit RPPG(QObject *parent);
+    explicit RPPG(QObject *parent = nullptr);
     // Load Settings
     bool load(int camIndex, const string &haarPath, const string &dnnProtoPath, const string &dnnModelPath);
     double processFrame(Mat &frameRGB, Mat &frameGray, int time);

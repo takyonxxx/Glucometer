@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
                 | Qt::InvertedPortraitOrientation
                 | Qt::InvertedLandscapeOrientation);
 
-    cpThread = new CaptureThread{this};
+    cpThread = new CaptureThread();
     connect(cpThread, &CaptureThread::frameCaptured, this, &MainWindow::processFrame);
     connect(cpThread, &CaptureThread::sendInfo, this, &MainWindow::printInfo);
     connect(cpThread, &CaptureThread::finished, cpThread, &QObject::deleteLater);

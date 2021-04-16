@@ -12,7 +12,7 @@ public:
     explicit QtCameraCapture(QObject *parent = 0);
 
     QList<QVideoFrame::PixelFormat> supportedPixelFormats(
-            QAbstractVideoBuffer::HandleType handleType = QAbstractVideoBuffer::NoHandle) const;
+            QAbstractVideoBuffer::HandleType handleType = QAbstractVideoBuffer::NoHandle) const override;
 
     bool present(const QVideoFrame &frame) override;
 

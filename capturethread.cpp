@@ -5,7 +5,7 @@ CaptureThread::CaptureThread(QObject* parent)
 {
     qRegisterMetaType<Mat>("Mat&");
 
-    rppg = new RPPG(this);
+    rppg = new RPPG();
     connect(rppg, &RPPG::sendInfo, this, &CaptureThread::printInfo);
     rppg->load(0, HAAR_CLASSIFIER_PATH, DNN_PROTO_PATH, DNN_MODEL_PATH);
 
@@ -78,7 +78,15 @@ void CaptureThread::processImage(QVideoFrame frame)
     {
         QVideoFrame cloneFrame(frame);
         cloneFrame.map(QAbstractVideoBuffer::ReadOnly);
+
         QImage img = cloneFrame.image();
+        /*QImage::Format imageFormat = QVideoFrame::imageFormatFromPixelFormat(cloneFrame.pixelFormat());
+        QImage img( cloneFrame.bits(),
+                     cloneFrame.width(),
+                     cloneFrame.height(),
+                     cloneFrame.bytesPerLine(),
+                     imageFormat);*/
+
         cloneFrame.unmap();
 
         if(m_orientation == Qt::ScreenOrientation::PortraitOrientation)
@@ -109,8 +117,8 @@ void CaptureThread::processImage(QVideoFrame frame)
             double bpm = 0.0;
 
             // Generate grayframe
-            cvtColor(frameRGB, frameGray, COLOR_BGR2GRAY);
-            equalizeHist(frameGray, frameGray);
+            cvtColor((InputArray)frameRGB, (OutputArray)frameGray, COLOR_BGR2GRAY);
+            equalizeHist((InputArray)frameGray, (OutputArray)frameGray);
 
             int time;
             time = (cv::getTickCount()*1000.0)/cv::getTickFrequency();
@@ -162,8 +170,8 @@ void CaptureThread::run()
             if(!frameRGB.empty())
             {
                 // Generate grayframe
-                cvtColor(frameRGB, frameGray, COLOR_BGR2GRAY);
-                equalizeHist(frameGray, frameGray);
+                cvtColor((InputArray)frameRGB, (OutputArray)frameGray, COLOR_BGR2GRAY);
+                equalizeHist((InputArray)frameGray, (OutputArray)frameGray);
 
                 int time;
                 time = (cv::getTickCount()*1000.0)/cv::getTickFrequency();

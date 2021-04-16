@@ -3,6 +3,7 @@
 #include <QThread>
 #include <QCamera>
 #include <QCameraInfo>
+#include <QVideoFrame>
 #include <QGraphicsPixmapItem>
 #include "RPPG.hpp"
 #include "qtcameracapture.h"
@@ -18,7 +19,7 @@ class CaptureThread : public QThread
 
 public:
 
-    explicit CaptureThread(QObject *parent);
+    explicit CaptureThread(QObject *parent = nullptr);
     void abort();
 
     void setOrientation(const Qt::ScreenOrientation &orientation);

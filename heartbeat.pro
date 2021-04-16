@@ -66,45 +66,54 @@ ios {
 
 android {
 
-    ITERATION=1
-
-    LIBS += \
-       -L$$PWD/OpenCV-android-sdk/sdk/native/3rdparty/libs/armeabi-v7a \
-       -ltbb\
-       -lcpufeatures\
-       -llibprotobuf\
-       -llibjpeg-turbo\
-       -llibwebp\
-       -llibpng\
-       -llibtiff\
-       -lIlmImf\
-       -ltegra_hal
-
-    LIBS += -L$$PWD/OpenCV-android-sdk/sdk/native/libs/armeabi-v7a -lopencv_java4
-
-    LIBS += \
-        -L$$PWD/OpenCV-android-sdk/sdk/native/staticlibs/armeabi-v7a \
-        -lopencv_dnn\
-        -lopencv_ml\
-        -lopencv_objdetect\
-        -lopencv_photo\
-        -lopencv_stitching\
-        -lopencv_video\
-        -lopencv_calib3d\
-        -lopencv_features2d\
-        -lopencv_highgui\
-        -lopencv_flann\
-        -lopencv_videoio\
-        -lopencv_imgcodecs\
-        -lopencv_imgproc\
-        -lopencv_core
-
     INCLUDEPATH += $$PWD/OpenCV-android-sdk/sdk/native/jni/include
     DEPENDPATH += $$PWD/OpenCV-android-sdk/sdk/native/jni/include
-    ANDROID_EXTRA_LIBS = $$PWD/OpenCV-android-sdk/sdk/native/libs/armeabi-v7a/libopencv_java4.so   
 
+    ANDROID_TARGET_ARCH = armeabi-v7a
 
-    #sudo apt install libopencv-dev python3-opencv
+    contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
+
+        LIBS += -L$$PWD/OpenCV-android-sdk/sdk/native/libs/armeabi-v7a -lopencv_java4
+        LIBS += \
+            -L$$PWD/OpenCV-android-sdk/sdk/native/staticlibs/armeabi-v7a \
+            -lopencv_dnn\
+            -lopencv_ml\
+            -lopencv_objdetect\
+            -lopencv_photo\
+            -lopencv_stitching\
+            -lopencv_video\
+            -lopencv_calib3d\
+            -lopencv_features2d\
+            -lopencv_highgui\
+            -lopencv_flann\
+            -lopencv_videoio\
+            -lopencv_imgcodecs\
+            -lopencv_imgproc\
+            -lopencv_core
+        ANDROID_EXTRA_LIBS = $$PWD/OpenCV-android-sdk/sdk/native/libs/armeabi-v7a/libopencv_java4.so       
+    }
+
+    contains(ANDROID_TARGET_ARCH, arm64-v8a) {
+
+        LIBS += -L$$PWD/OpenCV-android-sdk/sdk/native/libs/arm64-v8a -lopencv_java4
+        LIBS += \
+            -L$$PWD/OpenCV-android-sdk/sdk/native/staticlibs/arm64-v8a \
+            -lopencv_dnn\
+            -lopencv_ml\
+            -lopencv_objdetect\
+            -lopencv_photo\
+            -lopencv_stitching\
+            -lopencv_video\
+            -lopencv_calib3d\
+            -lopencv_features2d\
+            -lopencv_highgui\
+            -lopencv_flann\
+            -lopencv_videoio\
+            -lopencv_imgcodecs\
+            -lopencv_imgproc\
+            -lopencv_core
+        ANDROID_EXTRA_LIBS = $$PWD/OpenCV-android-sdk/sdk/native/libs/arm64-v8a/libopencv_java4.so       
+    }
 
     RESOURCES += \
         resources.qrc
@@ -122,27 +131,4 @@ android {
     ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
 }
-
-contains(ANDROID_TARGET_ARCH, x86) {
-
-    ANDROID_VERSION_CODE = $$ITERATION
-}
-
-contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
-    win32 {
-        ITERATION = $$system("set /a $$ITERATION + 1")
-    } else:unix {
-        ITERATION = $$system("echo $(($$ITERATION + 1))")
-    }
-
-    ANDROID_VERSION_CODE = $$ITERATION
-}
-
-contains(ANDROID_TARGET_ARCH, arm64-v8a) {
-    win32 {
-        ITERATION = $$system("set /a $$ITERATION + 2")
-    } else:unix {
-        ITERATION = $$system("echo $(($$ITERATION + 2))")
-    }
-    ANDROID_VERSION_CODE = $$ITERATION
-}
+#<uses-sdk android:minSdkVersion="21" android:targetSdkVersion="29"/>
